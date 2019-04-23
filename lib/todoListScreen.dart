@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'todoItem.dart';
 import 'dart:async';
 import 'dataAccess.dart';
+import 'addTodoItemScreen.dart';
 
 class TodoListScreen extends StatefulWidget {
   TodoListScreen({Key key, this.title}) : super(key: key);
@@ -31,22 +32,29 @@ class _TodoListScreenState extends State<TodoListScreen> {
     });
   }
 
-  void _addTodoItem() {
-    // TODO navigate to Create Todo Item Screen
+  void _addTodoItem() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (context) => AddTodoItemScreen()));
+    _dataAccess.getTodoItems()
+        .then((r) {
+      setState(() { _todoItems = r; });
+    });
   }
 
   void _updateTodoCompleteStatus(TodoItem item, bool newStatus) {
-    final tempTodoItems = _todoItems;
-    tempTodoItems.firstWhere((i) => i.id ==item.id).isComplete = newStatus;
-    setState(() { _todoItems = tempTodoItems; });
-    // TODO: Persist change
+    item.isComplete = newStatus;
+    _dataAccess.updateTodo(item);
+    _dataAccess.getTodoItems()
+        .then((items) {
+      setState(() { _todoItems = items; });
+    });
   }
 
   void _deleteTodoItem(TodoItem item) {
-    final tempTodoItems = _todoItems;
-    tempTodoItems.remove(item);
-    setState(() { _todoItems = tempTodoItems; });
-    // TODO: Persist change
+    _dataAccess.deleteTodo(item);
+    _dataAccess.getTodoItems()
+        .then((items) {
+      setState(() { _todoItems = items; });
+    });
   }
 
   Future<Null> _displayDeleteConfirmationDialog(TodoItem item) {
